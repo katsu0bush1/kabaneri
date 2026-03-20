@@ -195,7 +195,7 @@ function initC(){CNTS.forEach(function(s){s.items.forEach(function(i){CC[i.k]=0}
 function load(){initC();try{var d=JSON.parse(localStorage.getItem(SK+“c”));if(d)for(var k in d)if(k in CC)CC[k]=d[k]}catch(e){}
 try{LOG=JSON.parse(localStorage.getItem(SK+“l”))||[]}catch(e){LOG=[]}
 // Determine if we’re in ST
-inST=false;for(var i=LOG.length-1;i>=0;i–){if(LOG[i].ev===“st”){inST=true;break}if(LOG[i].ev===“stend”){break}}}
+inST=false;for(var i=LOG.length-1;i>=0;i-=1){if(LOG[i].ev===“st”){inST=true;break}if(LOG[i].ev===“stend”){break}}}
 function save(){try{localStorage.setItem(SK+“c”,JSON.stringify(CC));localStorage.setItem(SK+“l”,JSON.stringify(LOG))}catch(e){}}
 
 function est(k,v){var r=REF[k];if(!r||!v||v===Infinity)return null;var c=1,m=Infinity;for(var s=1;s<=6;s++){var d=Math.abs(v-r[s]);if(d<m){m=d;c=s}}return c}
@@ -222,7 +222,7 @@ return total}
 
 // Get the “current interval G” = the last entered G that’s not an ST event
 function currentIntervalG(){
-for(var i=LOG.length-1;i>=0;i–){
+for(var i=LOG.length-1;i>=0;i-=1){
 var e=LOG[i];
 if(e.ev===“stend”)return 0; // new interval, nothing yet
 if(e.ev===“st”||e.ev===“ka”||e.ev===“cka”)continue;
@@ -232,24 +232,19 @@ return 0}
 // Calculate CZ points from counter: count chance eyes since last CZ/ST reset
 // Uses the counter values which track the CURRENT session between resets
 function calcCzPts(){
-// 生駒pt: 無発光1 + 発光15 + 高確15 + 発光中同15 + 複合(生駒含む)通常15 + 高確30 + オールスター60
-var iko=CC.lIkoC*1 + CC.lIkoL*15 + CC.lIkoH*15 + CC.lIkoSm*15
-
-- (CC.dblIM+CC.dblIK)*15 + (CC.dblIMh+CC.dblIKh)*30 + CC.allC*60;
-  var mum=CC.lMumC*1 + CC.lMumL*15 + CC.lMumH*15 + CC.lMumSm*15
-- (CC.dblIM+CC.dblMK)*15 + (CC.dblIMh+CC.dblMKh)*30 + CC.allC*60;
-  var kab=CC.lKbnC*1 + CC.lKbnL*15 + CC.lKbnH*15
-- (CC.dblIK+CC.dblMK)*15 + (CC.dblIKh+CC.dblMKh)*30 + CC.allC*60;
-  // Counts
-  var ikoN=CC.lIkoC+CC.lIkoL+CC.lIkoH+CC.lIkoSm;
-  var mumN=CC.lMumC+CC.lMumL+CC.lMumH+CC.lMumSm;
-  // 発光率 = 低確での発光 / 低確でのチャンス目(無発光+発光)のみ。高確・発光中同は母数に含めない
-  var ikoLowTotal=CC.lIkoC+CC.lIkoL;
-  var mumLowTotal=CC.lMumC+CC.lMumL;
-  var ikoLR=ikoLowTotal>0?(CC.lIkoL/ikoLowTotal*100).toFixed(1):“0”;
-  var mumLR=mumLowTotal>0?(CC.lMumL/mumLowTotal*100).toFixed(1):“0”;
-  return{iko:iko,mum:mum,kab:kab,ikoN:ikoN,mumN:mumN,ikoLR:ikoLR,mumLR:mumLR,ikoLow:ikoLowTotal,mumLow:mumLowTotal}
-  }
+var iko=CC.lIkoC*1+CC.lIkoL*15+CC.lIkoH*15+CC.lIkoSm*15+(CC.dblIM+CC.dblIK)*15+(CC.dblIMh+CC.dblIKh)*30+CC.allC*60;
+var mum=CC.lMumC*1+CC.lMumL*15+CC.lMumH*15+CC.lMumSm*15+(CC.dblIM+CC.dblMK)*15+(CC.dblIMh+CC.dblMKh)*30+CC.allC*60;
+var kab=CC.lKbnC*1+CC.lKbnL*15+CC.lKbnH*15+(CC.dblIK+CC.dblMK)*15+(CC.dblIKh+CC.dblMKh)*30+CC.allC*60;
+// Counts
+var ikoN=CC.lIkoC+CC.lIkoL+CC.lIkoH+CC.lIkoSm;
+var mumN=CC.lMumC+CC.lMumL+CC.lMumH+CC.lMumSm;
+// 発光率 = 低確での発光 / 低確でのチャンス目(無発光+発光)のみ。高確・発光中同は母数に含めない
+var ikoLowTotal=CC.lIkoC+CC.lIkoL;
+var mumLowTotal=CC.lMumC+CC.lMumL;
+var ikoLR=ikoLowTotal>0?(CC.lIkoL/ikoLowTotal*100).toFixed(1):“0”;
+var mumLR=mumLowTotal>0?(CC.lMumL/mumLowTotal*100).toFixed(1):“0”;
+return{iko:iko,mum:mum,kab:kab,ikoN:ikoN,mumN:mumN,ikoLR:ikoLR,mumLR:mumLR,ikoLow:ikoLowTotal,mumLow:mumLowTotal}
+}
 
 function buildNote(e){
 var b=[];
@@ -467,7 +462,7 @@ if(el.dataset.a===“add”){addEntry();return}
 if(el.dataset.del!==undefined){LOG.splice(parseInt(el.dataset.del),1);save();load();render();return}
 if(el.dataset.tog){COL[el.dataset.tog]=!COL[el.dataset.tog];render();return}
 if(el.dataset.ci){CC[el.dataset.ci]++;save();render();return}
-if(el.dataset.cd){if(CC[el.dataset.cd]>0)CC[el.dataset.cd]–;save();render();return}
+if(el.dataset.cd){if(CC[el.dataset.cd]>0)CC[el.dataset.cd]-=1;save();render();return}
 }el=el.parentElement}});
 document.getElementById(“W”).addEventListener(“input”,function(ev){
 if(ev.target.id===“iG”)curG=ev.target.value;
