@@ -75,6 +75,16 @@ input[type=number]{-moz-appearance:textfield}
 .dt-f{width:100%;height:32px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#ccc;font-size:12px;padding:0 10px;outline:none;font-family:inherit;transition:border-color .15s}
 .dt-f:focus{border-color:rgba(128,203,196,.4)}
 
+/* ST end - yuuri reset toggle */
+.yr-wrap{margin:8px 0;padding:8px 10px;border-radius:10px;background:rgba(255,167,38,.06);border:1px solid rgba(255,167,38,.15)}
+.yr-row{display:flex;align-items:center;gap:8px}
+.yr-label{font-size:11px;color:#FFA726;font-weight:700;flex:1}
+.yr-hint{font-size:9px;color:rgba(255,255,255,.3);margin-top:3px}
+.yr-tog{width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);position:relative;transition:all .15s;flex-shrink:0}
+.yr-tog.on{background:rgba(255,167,38,.3);border-color:#FFA726}
+.yr-knob{width:18px;height:18px;border-radius:9px;background:#888;position:absolute;top:2px;left:2px;transition:all .15s}
+.yr-tog.on .yr-knob{left:22px;background:#FFA726}
+
 /* Add button */
 .ab{width:100%;padding:14px;border-radius:12px;font-size:14px;font-weight:900;color:#fff;margin-top:6px;transition:all .1s}
 .ab.ok{background:linear-gradient(135deg,#2e7d32,#1b5e20);box-shadow:0 4px 16px rgba(46,125,50,.3)}
@@ -164,6 +174,9 @@ input[type=number]{-moz-appearance:textfield}
 var SC={1:"#78909C",2:"#42A5F5",3:"#66BB6A",4:"#FFA726",5:"#EF5350",6:"#AB47BC"};
 var REF={bonus:{1:254.2,2:242.3,3:239.6,4:214.0,5:203.2,6:195.1},st:{1:422.5,2:405.9,3:398.7,4:357.2,5:332.6,6:318.5},bell:{1:121.1,2:114.4,3:112.8,4:106.2,5:104.2,6:99.1}};
 
+/* ====== 修正3: pt値を変数に切り出し（前作準拠・参考値） ====== */
+var PT={normal:1,light:15,highK:15,sameCM:15,dblNorm:15,dblHigh:30,allStar:60};
+
 var EVS=[
 {id:"ikocz",l:"生駒CZ",c:"c-iko",cat:"cz"},{id:"mumcz",l:"無名CZ",c:"c-mum",cat:"cz"},
 {id:"dorcz",l:"銅藍CZ",c:"c-dor",cat:"cz"},{id:"haya",l:"駿城ボーナス",c:"c-haya",cat:"bn"},
@@ -184,8 +197,9 @@ var CZ_RES=[{id:"s",l:"成功"},{id:"f",l:"失敗"}];
 var BN_TRIG=[{id:"c1",l:"1周期"},{id:"c2",l:"2周期"},{id:"c3",l:"3周期"},{id:"c4+",l:"4周期〜"},{id:"cz",l:"CZ経由"},{id:"kpt",l:"カバネPt"}];
 var ST_SCR=[{id:"def",l:"鉄下駄"},{id:"all",l:"全員集合"},{id:"swim",l:"水着"}];
 
+/* 修正4: ベルの説明を「全状態カウント」に更新 */
 var CNTS=[
-{id:"bell",t:"🔔 下段ベル",items:[{k:"bellCnt",l:"下段ベル（13枚）",s:"設1:1/121.1 設6:1/99.1"}]},
+{id:"bell",t:"🔔 下段ベル（全状態カウント）",items:[{k:"bellCnt",l:"下段ベル（13枚）通常時/AT中/BN中すべて",s:"設1:1/121.1 設6:1/99.1"}]},
 {id:"haya2",t:"🚂 駿城ボーナス中",items:[
 {k:"hayaC",l:"単独チャンス目"},{k:"haya3k",l:"↑ うち3000pt",s:"設1:1.2% 設6:2.3%"}]},
 {id:"cyc",t:"🔄 周期・ST",items:[
@@ -202,47 +216,62 @@ var CNTS=[
 {k:"ep7",l:"第七話",h:"設4↑確定"},{k:"bima",l:"美馬",h:"設4↑"}]}
 ];
 
+/* 修正3: PT_ITEMSのpt値もPT変数から参照 */
+/* 改善: タブ順を無名→生駒に変更 */
 var PT_ITEMS={
-iko:[
-{k:"lIkoC",l:"無発光",pt:1,badge:"1pt"},
-{k:"lIkoL",l:"発光",pt:15,badge:"15pt"},
-{k:"lIkoH",l:"高確中",pt:15,badge:"15pt"},
-{k:"lIkoSm",l:"発光中に同チャンス目",pt:15,badge:"15pt"}
-],
 mum:[
-{k:"lMumC",l:"無発光",pt:1,badge:"1pt"},
-{k:"lMumL",l:"発光",pt:15,badge:"15pt"},
-{k:"lMumH",l:"高確中",pt:15,badge:"15pt"},
-{k:"lMumSm",l:"発光中に同チャンス目",pt:15,badge:"15pt"}
+{k:"lMumC",l:"無発光",pt:PT.normal,badge:PT.normal+"pt"},
+{k:"lMumL",l:"発光",pt:PT.light,badge:PT.light+"pt"},
+{k:"lMumH",l:"高確中",pt:PT.highK,badge:PT.highK+"pt"},
+{k:"lMumSm",l:"発光中に同チャンス目",pt:PT.sameCM,badge:PT.sameCM+"pt"}
+],
+iko:[
+{k:"lIkoC",l:"無発光",pt:PT.normal,badge:PT.normal+"pt"},
+{k:"lIkoL",l:"発光",pt:PT.light,badge:PT.light+"pt"},
+{k:"lIkoH",l:"高確中",pt:PT.highK,badge:PT.highK+"pt"},
+{k:"lIkoSm",l:"発光中に同チャンス目",pt:PT.sameCM,badge:PT.sameCM+"pt"}
 ],
 kbn:[
-{k:"lKbnC",l:"無発光",pt:1,badge:"1pt"},
-{k:"lKbnL",l:"発光",pt:15,badge:"15pt"},
-{k:"lKbnH",l:"高確中",pt:15,badge:"15pt"}
+{k:"lKbnC",l:"無発光",pt:PT.normal,badge:PT.normal+"pt"},
+{k:"lKbnL",l:"発光",pt:PT.light,badge:PT.light+"pt"},
+{k:"lKbnH",l:"高確中",pt:PT.highK,badge:PT.highK+"pt"}
 ],
 dbl:[
-{k:"dblIM",l:"生駒-無名",pt:15,badge:"各15pt",sub:"通常"},
-{k:"dblIK",l:"生駒-カバネリ",pt:15,badge:"各15pt",sub:"通常"},
-{k:"dblMK",l:"無名-カバネリ",pt:15,badge:"各15pt",sub:"通常"},
-{k:"dblIMh",l:"生駒-無名",pt:30,badge:"各30pt",sub:"高確"},
-{k:"dblIKh",l:"生駒-カバネリ",pt:30,badge:"各30pt",sub:"高確"},
-{k:"dblMKh",l:"無名-カバネリ",pt:30,badge:"各30pt",sub:"高確"},
-{k:"allC",l:"オールスター目",pt:60,badge:"各60pt",sub:"銅藍CZ濃厚"}
+{k:"dblIM",l:"生駒-無名",pt:PT.dblNorm,badge:"各"+PT.dblNorm+"pt",sub:"通常"},
+{k:"dblIK",l:"生駒-カバネリ",pt:PT.dblNorm,badge:"各"+PT.dblNorm+"pt",sub:"通常"},
+{k:"dblMK",l:"無名-カバネリ",pt:PT.dblNorm,badge:"各"+PT.dblNorm+"pt",sub:"通常"},
+{k:"dblIMh",l:"生駒-無名",pt:PT.dblHigh,badge:"各"+PT.dblHigh+"pt",sub:"高確"},
+{k:"dblIKh",l:"生駒-カバネリ",pt:PT.dblHigh,badge:"各"+PT.dblHigh+"pt",sub:"高確"},
+{k:"dblMKh",l:"無名-カバネリ",pt:PT.dblHigh,badge:"各"+PT.dblHigh+"pt",sub:"高確"},
+{k:"allC",l:"オールスター目",pt:PT.allStar,badge:"各"+PT.allStar+"pt",sub:"銅藍CZ濃厚"}
 ]
 };
 
 var ALL_CC_KEYS=["lIkoC","lIkoL","lIkoH","lIkoSm","lMumC","lMumL","lMumH","lMumSm","lKbnC","lKbnL","lKbnH","dblIM","dblIK","dblMK","dblIMh","dblIKh","dblMKh","allC","bellCnt","hayaC","haya3k","c3a","c3b","kSt","kLp","o500","t_cu","t_si","t_go","t_ki","t_ra","o456","o666","z44","z55","z66","z77","ep7","bima"];
 
-var LOG=[],CC={},COL={},TAB="rec",inST=false;
-var curEv=null,curG="",curRes=null,curTrig=null,curScr=null,curNote="",curMai="";
-var rstP=false,rstT=null,SK="kb6";
-var ptTab="iko";
+/* 修正1&2: CZ間ptリセット対象キー */
+var PT_RESET_KEYS=["lIkoC","lIkoL","lIkoH","lIkoSm","lMumC","lMumL","lMumH","lMumSm","lKbnC","lKbnL","lKbnH","dblIM","dblIK","dblMK","dblIMh","dblIKh","dblMKh","allC"];
 
-function initC(){ALL_CC_KEYS.forEach(function(k){CC[k]=0});CNTS.forEach(function(s){COL[s.id]=false});COL["pt"]=false}
-function load(){initC();try{var d=JSON.parse(localStorage.getItem(SK+"c"));if(d)for(var k in d)if(k in CC)CC[k]=d[k]}catch(e){}
+/* 修正1&2: CC=CZ間ポイント用、CT=終日累計用（発光率母数） */
+var LOG=[],CC={},CT={},COL={},TAB="rec",inST=false;
+var curEv=null,curG="",curRes=null,curTrig=null,curScr=null,curNote="",curMai="",curYR=false;
+var dcGm=0; /* データカウンター総回転数（ベル確率の母数） */
+var rstP=false,rstT=null,SK="kb6";
+/* 改善: デフォルトタブを無名に変更 */
+var ptTab="mum";
+
+function initC(){ALL_CC_KEYS.forEach(function(k){CC[k]=0});PT_RESET_KEYS.forEach(function(k){CT[k]=0});CNTS.forEach(function(s){COL[s.id]=false});COL["pt"]=false}
+function load(){
+initC();
+try{var d=JSON.parse(localStorage.getItem(SK+"c"));if(d)for(var k in d)if(k in CC)CC[k]=d[k]}catch(e){}
+/* 修正2: 累計CTを読み込み */
+try{var d2=JSON.parse(localStorage.getItem(SK+"ct"));if(d2)for(var k2 in d2)if(k2 in CT)CT[k2]=d2[k2]}catch(e){}
+try{dcGm=parseInt(localStorage.getItem(SK+"dc"))||0}catch(e){dcGm=0}
 try{LOG=JSON.parse(localStorage.getItem(SK+"l"))||[]}catch(e){LOG=[]}
+/* 既存ユーザー: CT未保存ならCCの値をCTにコピーして初期化 */
+if(!localStorage.getItem(SK+"ct")){PT_RESET_KEYS.forEach(function(k){CT[k]=CC[k]})}
 inST=false;for(var i=LOG.length-1;i>=0;i-=1){if(LOG[i].ev==="st"){inST=true;break}if(LOG[i].ev==="stend"){break}}}
-function save(){try{localStorage.setItem(SK+"c",JSON.stringify(CC));localStorage.setItem(SK+"l",JSON.stringify(LOG))}catch(e){}}
+function save(){try{localStorage.setItem(SK+"c",JSON.stringify(CC));localStorage.setItem(SK+"ct",JSON.stringify(CT));localStorage.setItem(SK+"l",JSON.stringify(LOG));localStorage.setItem(SK+"dc",String(dcGm))}catch(e){}}
 
 function est(k,v){var r=REF[k];if(!r||!v||v===Infinity)return null;var c=1,m=Infinity;for(var s=1;s<=6;s++){var d=Math.abs(v-r[s]);if(d<m){m=d;c=s}}return c}
 function rate(n,d){return d?(n/d*100).toFixed(1):"0"}
@@ -253,10 +282,10 @@ var total=0,maxInInterval=0;
 for(var i=0;i<LOG.length;i++){
 var e=LOG[i],g=parseInt(e.g)||0;
 if(e.ev==="st"||e.ev==="ka"||e.ev==="cka"||e.ev==="stend"){
-if(e.ev==="stend"){total+=maxInInterval;maxInInterval=0}
+if(e.ev==="stend"){total=total+maxInInterval;maxInInterval=0}
 continue}
 if(g>maxInInterval)maxInInterval=g}
-total+=maxInInterval;
+total=total+maxInInterval;
 return total}
 
 function currentIntervalG(){
@@ -267,16 +296,18 @@ if(e.ev==="st"||e.ev==="ka"||e.ev==="cka")continue;
 return parseInt(e.g)||0}
 return 0}
 
+/* 修正1&2&3: CZ間ptはCCから計算、発光率はCTから計算 */
 function calcCzPts(){
-var iko=CC.lIkoC*1+CC.lIkoL*15+CC.lIkoH*15+CC.lIkoSm*15+(CC.dblIM+CC.dblIK)*15+(CC.dblIMh+CC.dblIKh)*30+CC.allC*60;
-var mum=CC.lMumC*1+CC.lMumL*15+CC.lMumH*15+CC.lMumSm*15+(CC.dblIM+CC.dblMK)*15+(CC.dblIMh+CC.dblMKh)*30+CC.allC*60;
-var kab=CC.lKbnC*1+CC.lKbnL*15+CC.lKbnH*15+(CC.dblIK+CC.dblMK)*15+(CC.dblIKh+CC.dblMKh)*30+CC.allC*60;
-var ikoN=CC.lIkoC+CC.lIkoL+CC.lIkoH+CC.lIkoSm;
-var mumN=CC.lMumC+CC.lMumL+CC.lMumH+CC.lMumSm;
-var ikoLowTotal=CC.lIkoC+CC.lIkoL;
-var mumLowTotal=CC.lMumC+CC.lMumL;
-var ikoLR=ikoLowTotal>0?(CC.lIkoL/ikoLowTotal*100).toFixed(1):"0";
-var mumLR=mumLowTotal>0?(CC.lMumL/mumLowTotal*100).toFixed(1):"0";
+var iko=CC.lIkoC*PT.normal + CC.lIkoL*PT.light + CC.lIkoH*PT.highK + CC.lIkoSm*PT.sameCM + (CC.dblIM+CC.dblIK)*PT.dblNorm + (CC.dblIMh+CC.dblIKh)*PT.dblHigh + CC.allC*PT.allStar;
+var mum=CC.lMumC*PT.normal + CC.lMumL*PT.light + CC.lMumH*PT.highK + CC.lMumSm*PT.sameCM + (CC.dblIM+CC.dblMK)*PT.dblNorm + (CC.dblIMh+CC.dblMKh)*PT.dblHigh + CC.allC*PT.allStar;
+var kab=CC.lKbnC*PT.normal + CC.lKbnL*PT.light + CC.lKbnH*PT.highK + (CC.dblIK+CC.dblMK)*PT.dblNorm + (CC.dblIKh+CC.dblMKh)*PT.dblHigh + CC.allC*PT.allStar;
+/* 修正2: 発光率は終日累計CTから算出 */
+var ikoN=CT.lIkoC+CT.lIkoL+CT.lIkoH+CT.lIkoSm;
+var mumN=CT.lMumC+CT.lMumL+CT.lMumH+CT.lMumSm;
+var ikoLowTotal=CT.lIkoC+CT.lIkoL;
+var mumLowTotal=CT.lMumC+CT.lMumL;
+var ikoLR=ikoLowTotal>0?(CT.lIkoL/ikoLowTotal*100).toFixed(1):"0";
+var mumLR=mumLowTotal>0?(CT.lMumL/mumLowTotal*100).toFixed(1):"0";
 return{iko:iko,mum:mum,kab:kab,ikoN:ikoN,mumN:mumN,ikoLR:ikoLR,mumLR:mumLR,ikoLow:ikoLowTotal,mumLow:mumLowTotal}
 }
 
@@ -287,6 +318,7 @@ if(e.trig){var tl={"c1":"1周期目","c2":"2周期目","c3":"3周期目","c4+":"
 if(e.scr){var sl={"def":"鉄下駄","all":"全員集合","swim":"水着"};b.push("画面："+(sl[e.scr]||e.scr))}
 if(e.pts!==undefined)b.push(e.pts+"ptでCZ当選");
 if(e.mai)b.push(e.mai+"枚獲得");
+if(e.yr)b.push("有利区間リセット");
 if(e.note)b.push(e.note);
 return b.join("　");
 }
@@ -294,13 +326,13 @@ return b.join("　");
 function stats(){
 var s={bn:0,stN:0,cz:0,mA:0,mS:0,iA:0,iS:0,dA:0,dS:0,ka:0,cka:0,hayN:0,epiN:0,sDef:0,sAll:0,sSwm:0};
 for(var i=0;i<LOG.length;i++){var e=LOG[i];
-if(e.ev==="mumcz"){s.mA+=1;s.cz+=1;if(e.res==="s")s.mS+=1}
-if(e.ev==="ikocz"){s.iA+=1;s.cz+=1;if(e.res==="s")s.iS+=1}
-if(e.ev==="dorcz"){s.dA+=1;s.cz+=1;if(e.res==="s")s.dS+=1}
-if(e.ev==="haya"||e.ev==="epi"){s.bn+=1;if(e.ev==="haya")s.hayN+=1;else s.epiN+=1}
-if(e.ev==="st")s.stN+=1;
-if(e.ev==="ka")s.ka+=1;if(e.ev==="cka")s.cka+=1;
-if(e.ev==="stend"){if(e.scr==="def")s.sDef+=1;if(e.scr==="all")s.sAll+=1;if(e.scr==="swim")s.sSwm+=1}}
+if(e.ev==="mumcz"){s.mA=s.mA+1;s.cz=s.cz+1;if(e.res==="s")s.mS=s.mS+1}
+if(e.ev==="ikocz"){s.iA=s.iA+1;s.cz=s.cz+1;if(e.res==="s")s.iS=s.iS+1}
+if(e.ev==="dorcz"){s.dA=s.dA+1;s.cz=s.cz+1;if(e.res==="s")s.dS=s.dS+1}
+if(e.ev==="haya"||e.ev==="epi"){s.bn=s.bn+1;if(e.ev==="haya")s.hayN=s.hayN+1;else s.epiN=s.epiN+1}
+if(e.ev==="st")s.stN=s.stN+1;
+if(e.ev==="ka")s.ka=s.ka+1;if(e.ev==="cka")s.cka=s.cka+1;
+if(e.ev==="stend"){if(e.scr==="def")s.sDef=s.sDef+1;if(e.scr==="all")s.sAll=s.sAll+1;if(e.scr==="swim")s.sSwm=s.sSwm+1}}
 return s}
 
 function cMin(){var m=0;
@@ -315,60 +347,69 @@ if(TAB==="rec")rRec();else if(TAB==="cnt")rCnt();else if(TAB==="tl")rTL();else r
 
 function rHdr(){
 var h='<div class="hr"><div><div class="ht">カバネリ海門決戦</div><div class="hs">'+(inST?'【ST中】':'通常時')+' / '+LOG.length+'件</div></div>';
-h+='<button type="button" class="hb'+(rstP?' p':'')+'" id="bR">'+(rstP?'確定？':'リセット')+'</button></div>';
-var cm=cMin();if(cm>0)h+='<div class="cfm" style="background:'+SC[cm]+'22;border:1px solid '+SC[cm]+';color:'+SC[cm]+'">🎯 設定'+cm+'以上確定</div>';
+h=h+'<button type="button" class="hb'+(rstP?' p':'')+'" id="bR">'+(rstP?'確定？':'リセット')+'</button></div>';
+var cm=cMin();if(cm>0)h=h+'<div class="cfm" style="background:'+SC[cm]+'22;border:1px solid '+SC[cm]+';color:'+SC[cm]+'">🎯 設定'+cm+'以上確定</div>';
 document.getElementById("hdr").innerHTML=h;
 var b=document.getElementById("bR");if(b){b.addEventListener("click",function(e){e.preventDefault();doRst()});b.addEventListener("touchend",function(e){e.preventDefault();doRst()})}}
 
 function rQS(){
 var s=stats(),tG=totalG(),h="";
-h+='<div class="qc"><span class="ql">総G</span> <span class="qv">'+tG+'</span></div>';
-if(tG>0&&s.bn>0){var v=tG/s.bn,e=est("bonus",v);h+='<div class="qc"><span class="ql">BN</span> <span class="qv">1/'+v.toFixed(1)+'</span>'+(e?' <span class="qe" style="color:'+SC[e]+'">設'+e+'</span>':'')+'</div>'}
-if(tG>0&&s.stN>0){var v2=tG/s.stN,e2=est("st",v2);h+='<div class="qc"><span class="ql">ST</span> <span class="qv">1/'+v2.toFixed(1)+'</span>'+(e2?' <span class="qe" style="color:'+SC[e2]+'">設'+e2+'</span>':'')+'</div>'}
-if(tG>0&&CC.bellCnt>0){var v3=tG/CC.bellCnt,e3=est("bell",v3);h+='<div class="qc"><span class="ql">ベル</span> <span class="qv">1/'+v3.toFixed(1)+'</span>'+(e3?' <span class="qe" style="color:'+SC[e3]+'">設'+e3+'</span>':'')+'</div>'}
+h=h+'<div class="qc"><span class="ql">総G</span> <span class="qv">'+tG+'</span></div>';
+if(tG>0&&s.bn>0){var v=tG/s.bn,e=est("bonus",v);h=h+'<div class="qc"><span class="ql">BN</span> <span class="qv">1/'+v.toFixed(1)+'</span>'+(e?' <span class="qe" style="color:'+SC[e]+'">設'+e+'</span>':'')+'</div>'}
+if(tG>0&&s.stN>0){var v2=tG/s.stN,e2=est("st",v2);h=h+'<div class="qc"><span class="ql">ST</span> <span class="qv">1/'+v2.toFixed(1)+'</span>'+(e2?' <span class="qe" style="color:'+SC[e2]+'">設'+e2+'</span>':'')+'</div>'}
+if(tG>0&&CC.bellCnt>0){var v3=tG/CC.bellCnt,e3=est("bell",v3);h=h+'<div class="qc"><span class="ql">ベル</span> <span class="qv">1/'+v3.toFixed(1)+'</span>'+(e3?' <span class="qe" style="color:'+SC[e3]+'">設'+e3+'</span>':'')+'</div>'}
+/* データカウンター総回転数が入力されていればそちらも表示 */
+if(dcGm>0&&CC.bellCnt>0){var v4=dcGm/CC.bellCnt,e4=est("bell",v4);h=h+'<div class="qc"><span class="ql">ベル(DC)</span> <span class="qv">1/'+v4.toFixed(1)+'</span>'+(e4?' <span class="qe" style="color:'+SC[e4]+'">設'+e4+'</span>':'')+'</div>'}
 document.getElementById("qs").innerHTML=h}
 
 function rTabs(){
 var ts=[{id:"rec",ic:"✏️",l:"記録"},{id:"cnt",ic:"🔢",l:"カウンター"},{id:"tl",ic:"📋",l:"履歴"},{id:"exp",ic:"📤",l:"出力"}];
-var h="";for(var i=0;i<ts.length;i++)h+='<div class="tb'+(TAB===ts[i].id?' a':'')+'" data-tab="'+ts[i].id+'"><span class="tb-ic">'+ts[i].ic+'</span>'+ts[i].l+'</div>';
+var h="";for(var i=0;i<ts.length;i++)h=h+'<div class="tb'+(TAB===ts[i].id?' a':'')+'" data-tab="'+ts[i].id+'"><span class="tb-ic">'+ts[i].ic+'</span>'+ts[i].l+'</div>';
 document.getElementById("tabs").innerHTML=h}
 
 function rRec(){
 var ct=document.getElementById("ct"),h='<div class="inp">';
-h+='<div class="ig"><label>'+(inST?'【ST中】G数':'累計G（ST終了後から）')+'</label><input type="number" inputmode="numeric" id="iG" value="'+curG+'" placeholder="0">';
-h+='<span class="tot">(総G: '+totalG()+')</span></div>';
-h+='<div class="eg">';
+h=h+'<div class="ig"><label>'+(inST?'【ST中】G数':'累計G（ST終了後から）')+'</label><input type="number" inputmode="numeric" id="iG" value="'+curG+'" placeholder="0">';
+h=h+'<span class="tot">(総G: '+totalG()+')</span></div>';
+h=h+'<div class="ig"><label>DC総回転</label><input type="number" inputmode="numeric" id="iDC" value="'+(dcGm||'')+'" placeholder="0" style="color:#80cbc4">';
+h=h+'<span class="tot" style="color:rgba(128,203,196,.4)">ベル確率の母数</span></div>';
+h=h+'<div class="eg">';
 for(var i=0;i<EVBTNS.length;i++){var eb=EVBTNS[i];
-h+='<button type="button" class="eb '+eb.c+(curEv===eb.id?' s':'')+'" data-ev="'+eb.id+'">'+eb.l+'</button>'}
-h+='</div>';
+h=h+'<button type="button" class="eb '+eb.c+(curEv===eb.id?' s':'')+'" data-ev="'+eb.id+'">'+eb.l+'</button>'}
+h=h+'</div>';
 if(curEv){
 var ev=gev(curEv);
 if(ev&&ev.cat==="cz"){
-h+='<div class="dt"><div class="dt-t">結果</div><div class="dt-r">';
-for(var i2=0;i2<CZ_RES.length;i2++){var r=CZ_RES[i2];h+='<button type="button" class="dt-b'+(curRes===r.id?' s':'')+'" data-res="'+r.id+'">'+r.l+'</button>'}
-h+='</div></div>';
+h=h+'<div class="dt"><div class="dt-t">結果</div><div class="dt-r">';
+for(var i2=0;i2<CZ_RES.length;i2++){var r=CZ_RES[i2];h=h+'<button type="button" class="dt-b'+(curRes===r.id?' s':'')+'" data-res="'+r.id+'">'+r.l+'</button>'}
+h=h+'</div></div>';
 var pts=calcCzPts();
 var czPt=curEv==="ikocz"?pts.iko:curEv==="mumcz"?pts.mum:pts.iko+pts.mum;
-h+='<div style="font-size:11px;color:#ce93d8;font-weight:700;margin-bottom:4px">📊 蓄積pt: <span style="font-size:14px">'+czPt+'pt</span> (生駒:'+pts.iko+' 無名:'+pts.mum+' カバネリ:'+pts.kab+')</div>';
+h=h+'<div style="font-size:11px;color:#ce93d8;font-weight:700;margin-bottom:4px">📊 蓄積pt: <span style="font-size:14px">'+czPt+'pt</span> (生駒:'+pts.iko+' 無名:'+pts.mum+' カバネリ:'+pts.kab+')</div>';
+h=h+'<div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:6px">※参考値（前作準拠）</div>';
 }
 if(ev&&ev.cat==="bn"){
-h+='<div class="dt"><div class="dt-t">契機</div><div class="dt-r">';
-for(var i3=0;i3<BN_TRIG.length;i3++){var t=BN_TRIG[i3];h+='<button type="button" class="dt-b'+(curTrig===t.id?' s':'')+'" data-trig="'+t.id+'">'+t.l+'</button>'}
-h+='</div></div>'}
+h=h+'<div class="dt"><div class="dt-t">契機</div><div class="dt-r">';
+for(var i3=0;i3<BN_TRIG.length;i3++){var t=BN_TRIG[i3];h=h+'<button type="button" class="dt-b'+(curTrig===t.id?' s':'')+'" data-trig="'+t.id+'">'+t.l+'</button>'}
+h=h+'</div></div>'}
 if(curEv==="stend"){
-h+='<div class="dt"><div class="dt-t">終了画面</div><div class="dt-r">';
-for(var i4=0;i4<ST_SCR.length;i4++){var sc=ST_SCR[i4];h+='<button type="button" class="dt-b'+(curScr===sc.id?' s':'')+'" data-scr="'+sc.id+'">'+sc.l+'</button>'}
-h+='</div></div>'}
+h=h+'<div class="dt"><div class="dt-t">終了画面</div><div class="dt-r">';
+for(var i4=0;i4<ST_SCR.length;i4++){var sc=ST_SCR[i4];h=h+'<button type="button" class="dt-b'+(curScr===sc.id?' s':'')+'" data-scr="'+sc.id+'">'+sc.l+'</button>'}
+h=h+'</div></div>';
+/* 修正1: 有利区間リセットトグル */
+h=h+'<div class="yr-wrap"><div class="yr-row"><span class="yr-label">有利区間リセット</span><div class="yr-tog'+(curYR?' on':'')+'" data-yr="1"><div class="yr-knob"></div></div></div>';
+h=h+'<div class="yr-hint">ONにするとチャンス目ポイントもリセットされます</div></div>';
+}
 if(ev&&ev.cat==="at"){
-h+='<div class="dt"><div class="dt-t">獲得枚数</div><input type="number" inputmode="numeric" class="dt-f" id="iMai" value="'+curMai+'" placeholder="枚数"></div>'}
+h=h+'<div class="dt"><div class="dt-t">獲得枚数</div><input type="number" inputmode="numeric" class="dt-f" id="iMai" value="'+curMai+'" placeholder="枚数"></div>'}
 if(curEv==="stend"){
-h+='<div class="dt"><div class="dt-t">トータル枚数</div><input type="number" inputmode="numeric" class="dt-f" id="iMai" value="'+curMai+'" placeholder="枚数"></div>'}
-h+='<div class="dt"><input type="text" class="dt-f" id="iN" placeholder="メモ（任意）" value="'+curNote+'"></div>'}
+h=h+'<div class="dt"><div class="dt-t">トータル枚数</div><input type="number" inputmode="numeric" class="dt-f" id="iMai" value="'+curMai+'" placeholder="枚数"></div>'}
+h=h+'<div class="dt"><input type="text" class="dt-f" id="iN" placeholder="メモ（任意）" value="'+curNote+'"></div>'}
 var ok=!!curEv;
-h+='<button type="button" class="ab '+(ok?'ok':'no')+'" data-a="add">'+(ok?'✓ 記録する':'↑ イベントを選択')+'</button></div>';
+h=h+'<button type="button" class="ab '+(ok?'ok':'no')+'" data-a="add">'+(ok?'✓ 記録する':'↑ イベントを選択')+'</button></div>';
 if(LOG.length>0){
-h+='<div class="rec-t">直近</div>';
-h+=buildTable(Math.max(0,LOG.length-5),LOG.length,true)}
+h=h+'<div class="rec-t">直近</div>';
+h=h+buildTable(Math.max(0,LOG.length-5),LOG.length,true)}
 ct.innerHTML=h}
 
 function buildTable(from,to,mini){
@@ -379,12 +420,12 @@ var gFmt;
 if(e.ev==="st"||e.ev==="ka"||e.ev==="cka"||e.ev==="stend")gFmt='【'+g+'】';
 else if(e.ev==="haya"||e.ev==="epi")gFmt=g;
 else gFmt='('+g+')';
-h+='<tr><td class="gm">'+gFmt+'</td>';
-h+='<td class="ev '+(ev?ev.c:'')+'">'+(ev?ev.l:e.ev)+'</td>';
-h+='<td class="nt">'+buildNote(e)+'</td>';
-if(mini)h+='<td class="del-c"><button type="button" class="td-d" data-del="'+i+'">×</button></td>';
-h+='</tr>'}
-h+='</tbody></table>';return h}
+h=h+'<tr><td class="gm">'+gFmt+'</td>';
+h=h+'<td class="ev '+(ev?ev.c:'')+'">'+(ev?ev.l:e.ev)+'</td>';
+h=h+'<td class="nt">'+buildNote(e)+'</td>';
+if(mini)h=h+'<td class="del-c"><button type="button" class="td-d" data-del="'+i+'">×</button></td>';
+h=h+'</tr>'}
+h=h+'</tbody></table>';return h}
 
 function rTL(){
 var ct=document.getElementById("ct");
@@ -393,154 +434,209 @@ ct.innerHTML=buildTable(0,LOG.length,true)}
 
 function rCnt(){
 var ct=document.getElementById("ct"),tG=totalG(),h='<div class="cnt">';
-h+=buildPtSection(tG);
+h=h+buildPtSection(tG);
 for(var si=0;si<CNTS.length;si++){
 var sec=CNTS[si],cl=COL[sec.id];
-h+='<div class="cs"><div class="cs-h" data-tog="'+sec.id+'"><div class="t">'+sec.t+'</div><span class="ar">'+(cl?'▶':'▼')+'</span></div>';
-if(!cl){h+='<div class="cs-b">';
+h=h+'<div class="cs"><div class="cs-h" data-tog="'+sec.id+'"><div class="t">'+sec.t+'</div><span class="ar">'+(cl?'▶':'▼')+'</span></div>';
+if(!cl){h=h+'<div class="cs-b">';
 for(var ii=0;ii<sec.items.length;ii++){var it=sec.items[ii];
-h+='<div class="ci"><div class="ci-l"><div class="ci-n">';
-if(it.dot)h+='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+it.dot+';margin-right:3px"></span>';
-h+=it.l+'</div>';if(it.h)h+='<div class="ci-h">'+it.h+'</div>';if(it.s)h+='<div class="ci-s">'+it.s+'</div>';
-h+='</div><div class="cw"><button type="button" class="cm" data-cd="'+it.k+'">−</button><div class="vl">'+CC[it.k]+'</div><button type="button" class="cp2" data-ci="'+it.k+'">＋</button></div></div>'}
+h=h+'<div class="ci"><div class="ci-l"><div class="ci-n">';
+if(it.dot)h=h+'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+it.dot+';margin-right:3px"></span>';
+h=h+it.l+'</div>';if(it.h)h=h+'<div class="ci-h">'+it.h+'</div>';if(it.s)h=h+'<div class="ci-s">'+it.s+'</div>';
+h=h+'</div><div class="cw"><button type="button" class="cm" data-cd="'+it.k+'">−</button><div class="vl">'+CC[it.k]+'</div><button type="button" class="cp2" data-ci="'+it.k+'">＋</button></div></div>'}
 if(sec.id==="bell"&&tG>0&&CC.bellCnt>0){var v=tG/CC.bellCnt,e=est("bell",v);
-h+='<div class="cc"><div class="cc-l">実測: 1/'+v.toFixed(1)+(e?' <span style="color:'+SC[e]+';font-weight:700">設'+e+'付近</span>':'')+'</div></div>'}
-if(sec.id==="haya2"&&CC.hayaC>0){h+='<div class="cc"><div class="cc-l">3000pt率: '+CC.haya3k+'/'+CC.hayaC+' ('+rate(CC.haya3k,CC.hayaC)+'%)</div><div class="cc-sub">参考: 設1=1.2% 設6=2.3%</div></div>'}
-if(sec.id==="cyc"&&CC.c3a>0){h+='<div class="cc"><div class="cc-l">3周期目当選: '+CC.c3b+'/'+CC.c3a+' ('+rate(CC.c3b,CC.c3a)+'%)</div>';
-if(CC.kSt>0)h+='<div class="cc-l">景之ループ: '+CC.kLp+'/'+CC.kSt+' ('+rate(CC.kLp,CC.kSt)+'%)</div>';h+='</div>'}
-h+='</div>'}h+='</div>'}h+='</div>';ct.innerHTML=h}
+h=h+'<div class="cc"><div class="cc-l">実測(通常G): 1/'+v.toFixed(1)+(e?' <span style="color:'+SC[e]+';font-weight:700">設'+e+'付近</span>':'')+'</div>';
+if(dcGm>0){var vdc=dcGm/CC.bellCnt,edc=est("bell",vdc);h=h+'<div class="cc-l">実測(DC総回転): 1/'+vdc.toFixed(1)+(edc?' <span style="color:'+SC[edc]+';font-weight:700">設'+edc+'付近</span>':'')+'</div>'}
+h=h+'</div>'}
+if(sec.id==="haya2"&&CC.hayaC>0){h=h+'<div class="cc"><div class="cc-l">3000pt率: '+CC.haya3k+'/'+CC.hayaC+' ('+rate(CC.haya3k,CC.hayaC)+'%)</div><div class="cc-sub">参考: 設1=1.2% 設6=2.3%</div></div>'}
+if(sec.id==="cyc"&&CC.c3a>0){h=h+'<div class="cc"><div class="cc-l">3周期目当選: '+CC.c3b+'/'+CC.c3a+' ('+rate(CC.c3b,CC.c3a)+'%)</div>';
+if(CC.kSt>0)h=h+'<div class="cc-l">景之ループ: '+CC.kLp+'/'+CC.kSt+' ('+rate(CC.kLp,CC.kSt)+'%)</div>';h=h+'</div>'}
+h=h+'</div>'}h=h+'</div>'}h=h+'</div>';ct.innerHTML=h}
 
 function buildPtSection(tG){
 var h='';
 var pts=calcCzPts();
 var cl=COL["pt"];
-h+='<div class="pt-wrap">';
-h+='<div class="pt-header" data-tog="pt"><div class="t">💡 チャンス目ポイント集計</div><span class="ar">'+(cl?'▶':'▼')+'</span></div>';
+h=h+'<div class="pt-wrap">';
+h=h+'<div class="pt-header" data-tog="pt"><div class="t">💡 チャンス目ポイント集計</div><span class="ar">'+(cl?'▶':'▼')+'</span></div>';
 if(!cl){
-h+='<div style="padding:8px 10px 4px">';
-h+='<div style="display:flex;gap:6px">';
-h+='<div style="flex:1;text-align:center;padding:6px 4px;border-radius:8px;background:rgba(129,199,132,.08);border:1px solid rgba(129,199,132,.12)">';
-h+='<div style="font-size:9px;color:#81c784;font-weight:600">生駒</div>';
-h+='<div style="font-size:18px;font-weight:800;color:#81c784;font-family:monospace">'+pts.iko+'<span style="font-size:10px">pt</span></div>';
-if(pts.ikoLow>0)h+='<div style="font-size:8px;color:rgba(255,255,255,.25)">発光率 '+pts.ikoLR+'%</div>';
-h+='</div>';
-h+='<div style="flex:1;text-align:center;padding:6px 4px;border-radius:8px;background:rgba(229,115,115,.08);border:1px solid rgba(229,115,115,.12)">';
-h+='<div style="font-size:9px;color:#e57373;font-weight:600">無名</div>';
-h+='<div style="font-size:18px;font-weight:800;color:#e57373;font-family:monospace">'+pts.mum+'<span style="font-size:10px">pt</span></div>';
-if(pts.mumLow>0)h+='<div style="font-size:8px;color:rgba(255,255,255,.25)">発光率 '+pts.mumLR+'%</div>';
-h+='</div>';
-h+='<div style="flex:1;text-align:center;padding:6px 4px;border-radius:8px;background:rgba(255,213,79,.08);border:1px solid rgba(255,213,79,.12)">';
-h+='<div style="font-size:9px;color:#ffd54f;font-weight:600">カバネリ</div>';
-h+='<div style="font-size:18px;font-weight:800;color:#ffd54f;font-family:monospace">'+pts.kab+'<span style="font-size:10px">pt</span></div>';
-h+='</div>';
-h+='</div>';
+h=h+'<div style="padding:8px 10px 4px">';
+h=h+'<div style="display:flex;gap:6px">';
+/* 改善: カード順を無名→生駒→カバネリに変更 */
+h=h+'<div style="flex:1;text-align:center;padding:6px 4px;border-radius:8px;background:rgba(229,115,115,.08);border:1px solid rgba(229,115,115,.12)">';
+h=h+'<div style="font-size:9px;color:#e57373;font-weight:600">無名</div>';
+h=h+'<div style="font-size:18px;font-weight:800;color:#e57373;font-family:monospace">'+pts.mum+'<span style="font-size:10px">pt</span></div>';
+if(pts.mumLow>0)h=h+'<div style="font-size:8px;color:rgba(255,255,255,.25)">発光率 '+pts.mumLR+'%</div>';
+h=h+'</div>';
+h=h+'<div style="flex:1;text-align:center;padding:6px 4px;border-radius:8px;background:rgba(129,199,132,.08);border:1px solid rgba(129,199,132,.12)">';
+h=h+'<div style="font-size:9px;color:#81c784;font-weight:600">生駒</div>';
+h=h+'<div style="font-size:18px;font-weight:800;color:#81c784;font-family:monospace">'+pts.iko+'<span style="font-size:10px">pt</span></div>';
+if(pts.ikoLow>0)h=h+'<div style="font-size:8px;color:rgba(255,255,255,.25)">発光率 '+pts.ikoLR+'%</div>';
+h=h+'</div>';
+h=h+'<div style="flex:1;text-align:center;padding:6px 4px;border-radius:8px;background:rgba(255,213,79,.08);border:1px solid rgba(255,213,79,.12)">';
+h=h+'<div style="font-size:9px;color:#ffd54f;font-weight:600">カバネリ</div>';
+h=h+'<div style="font-size:18px;font-weight:800;color:#ffd54f;font-family:monospace">'+pts.kab+'<span style="font-size:10px">pt</span></div>';
+h=h+'</div>';
+h=h+'</div>';
 var maxPt=Math.max(pts.iko,pts.mum);
 if(maxPt>=120){
-h+='<div style="margin-top:6px;padding:4px 8px;border-radius:6px;background:rgba(255,80,80,.12);border:1px solid rgba(255,80,80,.2);text-align:center;font-size:10px;font-weight:700;color:#ff5252">🚨 '+maxPt+'pt — 低設定赤信号</div>';
+h=h+'<div style="margin-top:6px;padding:4px 8px;border-radius:6px;background:rgba(255,80,80,.12);border:1px solid rgba(255,80,80,.2);text-align:center;font-size:10px;font-weight:700;color:#ff5252">🚨 '+maxPt+'pt — 低設定赤信号</div>';
 }else if(maxPt>=105){
-h+='<div style="margin-top:6px;padding:4px 8px;border-radius:6px;background:rgba(255,167,38,.1);border:1px solid rgba(255,167,38,.15);text-align:center;font-size:10px;font-weight:700;color:#FFA726">⚠️ '+maxPt+'pt — 低設定の可能性↑</div>';
+h=h+'<div style="margin-top:6px;padding:4px 8px;border-radius:6px;background:rgba(255,167,38,.1);border:1px solid rgba(255,167,38,.15);text-align:center;font-size:10px;font-weight:700;color:#FFA726">⚠️ '+maxPt+'pt — 低設定の可能性↑</div>';
 }else if(maxPt>0){
-h+='<div style="margin-top:4px;text-align:center;font-size:9px;color:rgba(255,255,255,.2)">規定pt: 非優遇15〜150 / 優遇15〜75</div>';
+h=h+'<div style="margin-top:4px;text-align:center;font-size:9px;color:rgba(255,255,255,.2)">規定pt: 非優遇15〜150 / 優遇15〜75</div>';
 }
-h+='</div>';
+/* 修正3: 参考値注記 */
+if(maxPt>0){
+h=h+'<div style="margin-top:2px;text-align:center;font-size:8px;color:rgba(255,167,38,.5)">※pt値は前作準拠の参考値です</div>';
+}
+/* 修正2: 終日累計の発光率セクション */
+if(pts.ikoLow>0||pts.mumLow>0){
+h=h+'<div style="margin-top:6px;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)">';
+h=h+'<div style="font-size:9px;color:rgba(255,215,0,.6);font-weight:700;margin-bottom:3px">📈 終日累計（発光率）</div>';
+if(pts.mumLow>0)h=h+'<div style="font-size:10px;color:#e57373">無名: 全'+pts.mumN+'回 / 低確発光率'+pts.mumLR+'% ['+CT.lMumL+'/'+pts.mumLow+']</div>';
+if(pts.ikoLow>0)h=h+'<div style="font-size:10px;color:#81c784">生駒: 全'+pts.ikoN+'回 / 低確発光率'+pts.ikoLR+'% ['+CT.lIkoL+'/'+pts.ikoLow+']</div>';
+h=h+'</div>';
+}
+h=h+'</div>';
+/* 改善: タブ順を無名→生駒→カバネリ→複合に変更 */
 var tabDefs=[
-{id:"iko",l:"生駒",color:"#81c784"},
 {id:"mum",l:"無名",color:"#e57373"},
+{id:"iko",l:"生駒",color:"#81c784"},
 {id:"kbn",l:"カバネリ",color:"#ffd54f"},
 {id:"dbl",l:"複合",color:"#ce93d8"}
 ];
-h+='<div class="pt-tabs">';
+h=h+'<div class="pt-tabs">';
 for(var ti=0;ti<tabDefs.length;ti++){
 var td=tabDefs[ti];
-h+='<div class="pt-tab'+(ptTab===td.id?' active':'')+'" style="--tab-color:'+td.color+'" data-pt="'+td.id+'">'+td.l+'</div>';
+h=h+'<div class="pt-tab'+(ptTab===td.id?' active':'')+'" style="--tab-color:'+td.color+'" data-pt="'+td.id+'">'+td.l+'</div>';
 }
-h+='</div>';
+h=h+'</div>';
 var items=PT_ITEMS[ptTab]||[];
-h+='<div class="pt-body">';
+h=h+'<div class="pt-body">';
 for(var ii=0;ii<items.length;ii++){
 var it=items[ii];
-h+='<div class="pt-row">';
-h+='<div class="pt-row-l">';
-h+='<div class="pt-row-name">';
-if(it.sub)h+='<span style="font-size:9px;color:rgba(255,255,255,.3);margin-right:3px">'+it.sub+'</span>';
-h+=it.l+'</div>';
-h+='<div class="pt-row-pts"><span class="pt-row-badge" style="background:rgba(255,215,0,.1);color:#FFD700">'+it.badge+'</span></div>';
-h+='</div>';
-h+='<div class="pt-cnt">';
-h+='<button type="button" class="pt-minus" data-cd="'+it.k+'">−</button>';
-h+='<div class="pt-val">'+CC[it.k]+'</div>';
-h+='<button type="button" class="pt-plus" data-ci="'+it.k+'">＋</button>';
-h+='</div></div>';
+h=h+'<div class="pt-row">';
+h=h+'<div class="pt-row-l">';
+h=h+'<div class="pt-row-name">';
+if(it.sub)h=h+'<span style="font-size:9px;color:rgba(255,255,255,.3);margin-right:3px">'+it.sub+'</span>';
+h=h+it.l+'</div>';
+h=h+'<div class="pt-row-pts"><span class="pt-row-badge" style="background:rgba(255,215,0,.1);color:#FFD700">'+it.badge+'</span></div>';
+h=h+'</div>';
+h=h+'<div class="pt-cnt">';
+h=h+'<button type="button" class="pt-minus" data-cd="'+it.k+'">−</button>';
+h=h+'<div class="pt-val">'+CC[it.k]+'</div>';
+h=h+'<button type="button" class="pt-plus" data-ci="'+it.k+'">＋</button>';
+h=h+'</div></div>';
 }
-h+='</div>';
+h=h+'</div>';
 }
-h+='</div>';
+h=h+'</div>';
 return h;
 }
 
 function rExp(){
 var ct=document.getElementById("ct"),s=stats(),tG=totalG();
 var t="━━ カバネリ海門決戦 ━━\n"+new Date().toLocaleString("ja-JP")+"\n\n";
-t+="【タイムライン】\n";
+t=t+"【タイムライン】\n";
 for(var i=0;i<LOG.length;i++){var e=LOG[i],ev=gev(e.ev),g=e.g||"0";
 var gF=e.ev==="st"||e.ev==="ka"||e.ev==="cka"||e.ev==="stend"?"【"+g+"】":e.ev==="haya"||e.ev==="epi"?g:"("+g+")";
-t+=gF+"　"+(ev?ev.l:e.ev)+"　"+buildNote(e)+"\n"}
-t+="\n【集計】\n総G: "+tG+"\n";
-if(tG>0&&s.bn>0)t+="BN: 1/"+(tG/s.bn).toFixed(1)+"\n";
-if(tG>0&&s.stN>0)t+="ST: 1/"+(tG/s.stN).toFixed(1)+"\n";
-if(tG>0&&CC.bellCnt>0)t+="ベル: "+CC.bellCnt+"回 1/"+(tG/CC.bellCnt).toFixed(1)+"\n";
-t+="AT通常:"+s.ka+" 超:"+s.cka+"\n";
-if(s.mA)t+="無名CZ: "+s.mS+"/"+s.mA+" ("+rate(s.mS,s.mA)+"%)\n";
-if(s.iA)t+="生駒CZ: "+s.iS+"/"+s.iA+" ("+rate(s.iS,s.iA)+"%)\n";
-var cm=cMin();if(cm>0)t+="設定"+cm+"以上確定\n";
+t=t+gF+"　"+(ev?ev.l:e.ev)+"　"+buildNote(e)+"\n"}
+t=t+"\n【集計】\n総G: "+tG+"\n";
+if(tG>0&&s.bn>0)t=t+"BN: 1/"+(tG/s.bn).toFixed(1)+"\n";
+if(tG>0&&s.stN>0)t=t+"ST: 1/"+(tG/s.stN).toFixed(1)+"\n";
+if(tG>0&&CC.bellCnt>0)t=t+"ベル: "+CC.bellCnt+"回 1/"+(tG/CC.bellCnt).toFixed(1)+"(通常G)\n";
+if(dcGm>0&&CC.bellCnt>0)t=t+"ベル(DC総回転): "+CC.bellCnt+"回 1/"+(dcGm/CC.bellCnt).toFixed(1)+"\n";
+t=t+"AT通常:"+s.ka+" 超:"+s.cka+"\n";
+if(s.mA)t=t+"無名CZ: "+s.mS+"/"+s.mA+" ("+rate(s.mS,s.mA)+"%)\n";
+if(s.iA)t=t+"生駒CZ: "+s.iS+"/"+s.iA+" ("+rate(s.iS,s.iA)+"%)\n";
+/* 修正2: 累計発光率を出力 */
+var pts=calcCzPts();
+if(pts.mumLow>0)t=t+"無名低確発光率: "+pts.mumLR+"% ["+CT.lMumL+"/"+pts.mumLow+"]\n";
+if(pts.ikoLow>0)t=t+"生駒低確発光率: "+pts.ikoLR+"% ["+CT.lIkoL+"/"+pts.ikoLow+"]\n";
+var cm=cMin();if(cm>0)t=t+"設定"+cm+"以上確定\n";
 var h='<div class="exp"><div class="exp-h">長押し→すべてを選択→コピー</div>';
-h+='<textarea class="exp-ta" id="eTA" readonly>'+t.replace(/</g,"&lt;")+'</textarea></div>';
+h=h+'<textarea class="exp-ta" id="eTA" readonly>'+t.replace(/</g,"&lt;")+'</textarea></div>';
 ct.innerHTML=h;var ta=document.getElementById("eTA");if(ta){ta.focus();ta.setSelectionRange(0,ta.value.length)}}
 
+/* ====== 修正1: addEntry - リセットロジック全面修正 ====== */
 function addEntry(){
 if(!curEv)return;
 var e={ev:curEv,g:curG||"0"};
 var ev=gev(curEv);
 if(curRes)e.res=curRes;if(curTrig)e.trig=curTrig;if(curScr)e.scr=curScr;if(curNote)e.note=curNote;
 if(curMai)e.mai=curMai;
+
+/* CZ当選時: 該当CZのCZ間ptカウンターのみリセット。累計CTは触らない */
 if(ev&&ev.cat==="cz"){
 var pts=calcCzPts();
 e.pts=curEv==="ikocz"?pts.iko:curEv==="mumcz"?pts.mum:pts.iko+pts.mum;
 if(curEv==="ikocz"){CC.lIkoC=0;CC.lIkoL=0;CC.lIkoH=0;CC.lIkoSm=0}
 if(curEv==="mumcz"){CC.lMumC=0;CC.lMumL=0;CC.lMumH=0;CC.lMumSm=0}
-if(curEv==="dorcz"){CC.lIkoC=0;CC.lIkoL=0;CC.lIkoH=0;CC.lIkoSm=0;CC.lMumC=0;CC.lMumL=0;CC.lMumH=0;CC.lMumSm=0}
-CC.dblIM=0;CC.dblIK=0;CC.dblMK=0;CC.dblIMh=0;CC.dblIKh=0;CC.dblMKh=0;CC.allC=0}
-if(curEv==="st")inST=true;
-if(curEv==="stend"){inST=false;
+if(curEv==="dorcz"){
 CC.lIkoC=0;CC.lIkoL=0;CC.lIkoH=0;CC.lIkoSm=0;
-CC.lMumC=0;CC.lMumL=0;CC.lMumH=0;CC.lMumSm=0;
+CC.lMumC=0;CC.lMumL=0;CC.lMumH=0;CC.lMumSm=0}
+/* 複合・オールスターはどのCZでもリセット */
+CC.dblIM=0;CC.dblIK=0;CC.dblMK=0;CC.dblIMh=0;CC.dblIKh=0;CC.dblMKh=0;CC.allC=0;
+/* カバネリptカウンターはCZ当選ではリセットしない */
+}
+
+/* 修正1: 海門前兆（zencho）時: カバネリポイントのみリセット */
+if(curEv==="zencho"){
 CC.lKbnC=0;CC.lKbnL=0;CC.lKbnH=0;
-CC.dblIM=0;CC.dblIK=0;CC.dblMK=0;CC.dblIMh=0;CC.dblIKh=0;CC.dblMKh=0;CC.allC=0}
-LOG.push(e);curEv=null;curG="";curRes=null;curTrig=null;curScr=null;curNote="";curMai="";save();render()}
+CC.dblIK=0;CC.dblMK=0;CC.dblIKh=0;CC.dblMKh=0;
+}
+
+if(curEv==="st")inST=true;
+
+/* 修正1: ST終了: 有利区間リセットの場合のみCZ間ptをリセット */
+if(curEv==="stend"){
+inST=false;
+e.yr=curYR;
+if(curYR){
+PT_RESET_KEYS.forEach(function(k){CC[k]=0});
+}
+/* 有利区間リセットでない場合: ポイントは引き継ぎ（何もしない） */
+}
+
+LOG.push(e);curEv=null;curG="";curRes=null;curTrig=null;curScr=null;curNote="";curMai="";curYR=false;save();render()}
 
 function doRst(){
 if(!rstP){rstP=true;if(rstT)clearTimeout(rstT);rstT=setTimeout(function(){rstP=false;render()},3000);render();return}
-LOG=[];initC();inST=false;save();rstP=false;render()}
+LOG=[];initC();inST=false;dcGm=0;save();rstP=false;render()}
 
+/* ====== イベント委譲 ====== */
 document.getElementById("W").addEventListener("click",function(ev){
 var el=ev.target;
 for(var i=0;i<6&&el&&el!==this;i++){if(el.dataset){
 if(el.dataset.tab){TAB=el.dataset.tab;render();return}
-if(el.dataset.ev){curEv=(curEv===el.dataset.ev?null:el.dataset.ev);curRes=null;curTrig=null;curScr=null;curMai="";render();return}
+if(el.dataset.ev){curEv=(curEv===el.dataset.ev?null:el.dataset.ev);curRes=null;curTrig=null;curScr=null;curMai="";curYR=false;render();return}
 if(el.dataset.res){curRes=(curRes===el.dataset.res?null:el.dataset.res);render();return}
 if(el.dataset.trig){curTrig=(curTrig===el.dataset.trig?null:el.dataset.trig);render();return}
 if(el.dataset.scr){curScr=(curScr===el.dataset.scr?null:el.dataset.scr);render();return}
+if(el.dataset.yr){curYR=!curYR;render();return}
 if(el.dataset.a==="add"){addEntry();return}
 if(el.dataset.del!==undefined){LOG.splice(parseInt(el.dataset.del),1);save();load();render();return}
 if(el.dataset.tog){COL[el.dataset.tog]=!COL[el.dataset.tog];render();return}
 if(el.dataset.pt){ptTab=el.dataset.pt;render();return}
-if(el.dataset.ci){CC[el.dataset.ci]+=1;save();render();return}
-if(el.dataset.cd){if(CC[el.dataset.cd]>0)CC[el.dataset.cd]-=1;save();render();return}
+/* 修正2: ＋ボタンでCC(CZ間)とCT(累計)の両方に加算 */
+if(el.dataset.ci){
+var k=el.dataset.ci;
+CC[k]=CC[k]+1;
+if(PT_RESET_KEYS.indexOf(k)>=0){CT[k]=CT[k]+1}
+save();render();return}
+/* −ボタンでCC(CZ間)とCT(累計)の両方を減算 */
+if(el.dataset.cd){
+var k2=el.dataset.cd;
+if(CC[k2]>0){CC[k2]=CC[k2]-1}
+if(PT_RESET_KEYS.indexOf(k2)>=0&&CT[k2]>0){CT[k2]=CT[k2]-1}
+save();render();return}
 }el=el.parentElement}});
 document.getElementById("W").addEventListener("input",function(ev){
 if(ev.target.id==="iG")curG=ev.target.value;
 if(ev.target.id==="iN")curNote=ev.target.value;
-if(ev.target.id==="iMai")curMai=ev.target.value});
+if(ev.target.id==="iMai")curMai=ev.target.value;
+if(ev.target.id==="iDC"){dcGm=parseInt(ev.target.value)||0;save();rQS()}});
 
 load();render();
 </script>
